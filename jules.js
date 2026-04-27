@@ -1,6 +1,8 @@
 // Jules API処理モジュール
 // Docs: https://developers.google.com/jules/api
-const API_KEY = PropertiesService.getScriptProperties().getProperty('JULES_API_KEY');
+const API_KEY = typeof PropertiesService !== 'undefined'
+  ? PropertiesService.getScriptProperties().getProperty('JULES_API_KEY')
+  : 'MOCK_KEY';
 const API_BASE = 'https://jules.googleapis.com/';
 const API_VERSION = 'v1alpha';
 
@@ -70,4 +72,10 @@ function getStatusEmoji(state) {
     default:
       return "🌀"; // その他実行中など
   }
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    getStatusEmoji
+  };
 }
