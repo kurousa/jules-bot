@@ -51,7 +51,6 @@ function fetchJulesSessions() {
  * Julesのステータス名を絵文字に変換する
  */
 function getStatusEmoji(state) {
-  Logger.log(`state: ${state}`);
   if (!state) return "⚪"; // 不明
   
   switch (state.toUpperCase()) {
