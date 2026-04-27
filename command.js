@@ -17,9 +17,7 @@ function usage() {
     `・一覧: \`${COMMANDS["list"]}\``
   ].join("\n");
 
-  return ContentService
-    .createTextOutput(message)
-    .setMimeType(ContentService.MimeType.TEXT);
+  return createTextResponse(message);
 }
 
 /**
@@ -44,9 +42,7 @@ function getJulesJobList() {
   }
 
   if (!sessions || sessions.length === 0) {
-      return ContentService
-        .createTextOutput("現在実行中のタスクはありません。")
-        .setMimeType(ContentService.MimeType.TEXT);
+      return createTextResponse("現在実行中のタスクはありません。");
   }
 
   let listMessage = isFromCache 
@@ -61,10 +57,10 @@ function getJulesJobList() {
     const sessionUrl = `https://jules.google.com/session/${sessionId}`;
     listMessage += `${i + 1}. *${repo}*\n   ${statusEmoji} ${title}\n   🔗 ${sessionUrl}\n`;
   });
-  Logger.log(`listMessage: \n ${listMessage}`);
-  return ContentService
-    .createTextOutput(listMessage)
-    .setMimeType(ContentService.MimeType.TEXT);      
+  if (typeof Logger !== 'undefined') {
+    Logger.log(`listMessage: \n ${listMessage}`);
+  }
+  return createTextResponse(listMessage);
 }
 
 /**
@@ -81,14 +77,10 @@ function startTask(text) {
     const julesResponse = createJulesSession(repo, prompt);
     saveActiveSession(julesResponse, repo);
     
-    return ContentService
-      .createTextOutput(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`)
-      .setMimeType(ContentService.MimeType.TEXT);
+    return createTextResponse(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
 
   } catch (err) {
-      return ContentService
-        .createTextOutput("Jules API連携エラー: " + err.toString())
-        .setMimeType(ContentService.MimeType.TEXT);
+      return createTextResponse("Jules API連携エラー: " + err.toString());
   }
 }
 
@@ -121,4 +113,8 @@ function checkJulesStatusAndNotify() {
       });
     }
   });
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { usage, getJulesJobList, startTask, checkJulesStatusAndNotify };
 }
