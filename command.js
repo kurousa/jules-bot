@@ -61,7 +61,6 @@ function getJulesJobList() {
     const sessionUrl = `https://jules.google.com/session/${sessionId}`;
     listMessage += `${i + 1}. *${repo}*\n   ${statusEmoji} ${title}\n   🔗 ${sessionUrl}\n`;
   });
-  Logger.log(`listMessage: \n ${listMessage}`);
   return ContentService
     .createTextOutput(listMessage)
     .setMimeType(ContentService.MimeType.TEXT);      
