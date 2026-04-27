@@ -4,6 +4,14 @@
  * Postリクエストを処理する
  */
 function doPost(e) {
+  // Slackのトークン検証
+  const expectedToken = typeof PropertiesService !== 'undefined' ? PropertiesService.getScriptProperties().getProperty('SLACK_VERIFICATION_TOKEN') : null;
+  if (!expectedToken || !e || !e.parameter || e.parameter.token !== expectedToken) {
+    return typeof ContentService !== 'undefined'
+      ? ContentService.createTextOutput("Invalid token").setMimeType(ContentService.MimeType.TEXT)
+      : { status: 403, message: "Invalid token" };
+  }
+
   // Slackからのスラッシュコマンドは 'parameter' に入ってきます
   const params = e.parameter;
   // スラッシュコマンドのテキスト部分を取得 (例: "owner/repo bug fix")
