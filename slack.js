@@ -24,9 +24,7 @@ function doPost(e) {
  * 使い方の案内メッセージを出力する
  */
 function usage() {
-  return ContentService
-    .createTextOutput("💡 使いかた:\n・開始: `/jules [repo] [prompt]`\n・一覧: `/jules list`")
-    .setMimeType(ContentService.MimeType.TEXT);
+  return createTextResponse("💡 使いかた:\n・開始: `/jules [repo] [prompt]`\n・一覧: `/jules list`");
 }
 /**
  * 進行中ジョブリストを取得
@@ -51,9 +49,7 @@ function getJulesJobList() {
   }
 
   if (!sessions || sessions.length === 0) {
-      return ContentService
-        .createTextOutput("現在実行中のタスクはありません。")
-        .setMimeType(ContentService.MimeType.TEXT);
+      return createTextResponse("現在実行中のタスクはありません。");
   }
 
   let listMessage = isFromCache 
@@ -69,9 +65,7 @@ function getJulesJobList() {
     listMessage += `${i + 1}. *${repo}*\n   ${statusEmoji} ${title}\n   🔗 ${sessionUrl}\n`;
   });
   Logger.log(`listMessage: \n ${listMessage}`);
-  return ContentService
-    .createTextOutput(listMessage)
-    .setMimeType(ContentService.MimeType.TEXT);      
+  return createTextResponse(listMessage);
 }
 
 /**
@@ -89,14 +83,20 @@ function startTask(text) {
     const julesResponse = createJulesSession(repo, prompt);
     saveActiveSession(julesResponse, repo);
     
-    return ContentService
-      .createTextOutput(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`)
-      .setMimeType(ContentService.MimeType.TEXT);
+    return createTextResponse(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
 
   } catch (err) {
-      return ContentService
-        .createTextOutput("Jules API連携エラー: " + err.toString())
-        .setMimeType(ContentService.MimeType.TEXT);
+      return createTextResponse("Jules API連携エラー: " + err.toString());
   }
 }
 
+/**
+ * テキストレスポンスを生成する共通関数
+ * @param {string} message 返却するメッセージ
+ * @returns {GoogleAppsScript.Content.TextOutput}
+ */
+function createTextResponse(message) {
+  return ContentService
+    .createTextOutput(message)
+    .setMimeType(ContentService.MimeType.TEXT);
+}
