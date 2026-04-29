@@ -1,24 +1,29 @@
 // --- キャッシュ操作の関数群 ---
 function updateCache(sessions) {
-  const props = PropertiesService.getScriptProperties();
-  props.setProperty('SESSIONS_CACHE', JSON.stringify(sessions));
+  // 配列としてまるごと保存
+  callFirebase('sessions', 'put', sessions);
 }
 
 function saveActiveSession(newSession, repo) {
-  const props = PropertiesService.getScriptProperties();
   let sessions = getActiveSessionsCache();
-  // 簡易的にrepo情報を付与して先頭に追加
-  if (typeof newSession === 'object') {
-    newSession.repo = repo; 
-    sessions.unshift(newSession);
+  let sessionData;
+  if (newSession && typeof newSession === 'object') {
+    sessionData = newSession;
+    sessionData.repo = repo; 
   } else {
-    // もし文字列（name）だけ渡された場合
-    sessions.unshift({ name: newSession, repo: repo, state: 'RUNNING' });
+    sessionData = { 
+      name: String(newSession), 
+      repo: repo, 
+      state: 'RUNNING',
+      title: 'New Task' 
+    };
   }
-  updateCache(sessions.slice(0, 10)); // 直近10件に絞って保存
+  
+  sessions.unshift(sessionData);
+  updateCache(sessions.slice(0, 20));
 }
 
 function getActiveSessionsCache() {
-  const data = PropertiesService.getScriptProperties().getProperty('SESSIONS_CACHE');
-  return data ? JSON.parse(data) : [];
+  const data = callFirebase('sessions', 'get');
+  return Array.isArray(data) ? data : [];
 }

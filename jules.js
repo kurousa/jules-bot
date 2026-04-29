@@ -24,7 +24,10 @@ function createJulesSession(repoPath, prompt) {
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   });
-  
+  if (response.getResponseCode() !== 200) {
+    Logger.log(`[createJulesSession Error] Status Code: ${response.getResponseCode()}`);
+    return null
+  }
   return JSON.parse(response.getContentText());
 }
 
@@ -41,17 +44,38 @@ function fetchJulesSessions() {
     },
     muteHttpExceptions: true
   });
-
+  if (response.getResponseCode() !== 200) {
+    Logger.log(`[fetchJulesSessions Error] Status Code: ${response.getResponseCode()}`);
+    return null
+  }
   const data = JSON.parse(response.getContentText());
   // API仕様に基づき 'sessions' フィールドを返却
   return data.sessions || [];
 }
 
 /**
+ * 特定のセッションの最新アクティビティを取得する
+ */
+function fetchLatestActivity(sessionId) {
+  const url = `${API_BASE}${API_VERSION}/${sessionId}/activities`;
+  
+  const response = UrlFetchApp.fetch(url, {
+    method: 'get',
+    headers: { 'X-Goog-Api-Key': API_KEY },
+    muteHttpExceptions: true
+  });
+  if (response.getResponseCode() !== 200) {
+    Logger.log(`[fetchLatestActivity Error] Status Code: ${response.getResponseCode()}`);
+    return null
+  }
+  const data = JSON.parse(response.getContentText());
+  return data.activities ? data.activities[0] : null;
+}
+
+/**
  * Julesのステータス名を絵文字に変換する
  */
 function getStatusEmoji(state) {
-  Logger.log(`state: ${state}`);
   if (!state) return "⚪"; // 不明
   
   switch (state.toUpperCase()) {
