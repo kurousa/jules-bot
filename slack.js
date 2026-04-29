@@ -1,11 +1,20 @@
 // Slackとの通信を処理するモジュール
 
+let SLACK_BOT_TOKEN;
+let SLACK_CHANNEL_ID;
+
+if (typeof PropertiesService !== 'undefined') {
+  SLACK_BOT_TOKEN = PropertiesService.getScriptProperties().getProperty('SLACK_BOT_TOKEN');
+  SLACK_CHANNEL_ID = PropertiesService.getScriptProperties().getProperty('SLACK_CHANNEL_ID');
+}
+
 /**
  * 使い方の案内メッセージを出力する
  */
 function usage() {
   return createTextResponse_("💡 使いかた:\n・開始: `/jules [repo] [prompt]`\n・一覧: `/jules list`");
 }
+
 /**
  * 進行中ジョブリストを取得
  * @input
@@ -33,12 +42,11 @@ function getJulesJobList() {
   }
 }
 
-const SLACK_BOT_TOKEN = PropertiesService.getScriptProperties().getProperty('SLACK_BOT_TOKEN');
-const SLACK_CHANNEL_ID = PropertiesService.getScriptProperties().getProperty('SLACK_CHANNEL_ID');
-
 function sendSlackNotification(message) {
   if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
-    Logger.log('SlackトークンまたはチャンネルIDが設定されていません。');
+    if (typeof Logger !== 'undefined') {
+      Logger.log('SlackトークンまたはチャンネルIDが設定されていません。');
+    }
     return;
   }
   
