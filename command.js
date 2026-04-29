@@ -57,10 +57,7 @@ function getJulesJobList() {
     const sessionUrl = `https://jules.google.com/session/${sessionId}`;
     listMessage += `${i + 1}. *${repo}*\n   ${statusEmoji} ${title}\n   🔗 ${sessionUrl}\n`;
   });
-  if (typeof Logger !== 'undefined') {
-    Logger.log(`listMessage: \n ${listMessage}`);
-  }
-  return createTextResponse(listMessage);
+  return createTextResponse_(listMessage);
 }
 
 /**
@@ -77,10 +74,10 @@ function startTask(text) {
     const julesResponse = createJulesSession(repo, prompt);
     saveActiveSession(julesResponse, repo);
     
-    return createTextResponse(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
+    return createTextResponse_(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
 
   } catch (err) {
-      return createTextResponse("Jules API連携エラー: " + err.toString());
+      return createTextResponse_("Jules API連携エラー: " + err.toString());
   }
 }
 
