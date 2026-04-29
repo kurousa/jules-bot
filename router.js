@@ -4,6 +4,12 @@
  * Postリクエストを処理する
  */
 function doPost(e) {
+  // Slackのトークン検証
+  const expectedToken = PropertiesService.getScriptProperties().getProperty('SLACK_VERIFICATION_TOKEN');
+  if (!expectedToken || !e || !e.parameter || e.parameter.token !== expectedToken) {
+    return ContentService.createTextOutput("Invalid token").setMimeType(ContentService.MimeType.TEXT);
+  }
+
   // Slackからのスラッシュコマンドは 'parameter' に入ってきます
   const params = e?.parameter ?? null;
   // パラメータやテキストが存在しない場合は使い方を表示
