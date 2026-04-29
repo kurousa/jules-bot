@@ -6,7 +6,11 @@ describe('getStatusEmoji', () => {
       log: jest.fn()
     };
   });
-
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  
   test('should return 😴 for IDLE (case insensitive)', () => {
     expect(getStatusEmoji('IDLE')).toBe('😴');
     expect(getStatusEmoji('idle')).toBe('😴');
