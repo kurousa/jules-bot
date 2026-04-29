@@ -1,0 +1,12 @@
+{
+  "name": "jules-bot",
+  "version": "1.0.0",
+  "description": "Jules API Slack Bot",
+  "main": "jules.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
