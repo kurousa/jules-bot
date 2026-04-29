@@ -6,11 +6,7 @@ describe('getStatusEmoji', () => {
       log: jest.fn()
     };
   });
-  
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-  
+
   test('should return 😴 for IDLE (case insensitive)', () => {
     expect(getStatusEmoji('IDLE')).toBe('😴');
     expect(getStatusEmoji('idle')).toBe('😴');
@@ -44,6 +40,12 @@ describe('getStatusEmoji', () => {
   test('should return 🌀 for unknown states', () => {
     expect(getStatusEmoji('UNKNOWN')).toBe('🌀');
     expect(getStatusEmoji('SOME_OTHER_STATE')).toBe('🌀');
+  });
+
+  test('should handle non-string truthy values safely', () => {
+    expect(getStatusEmoji(true)).toBe('🌀');
+    expect(getStatusEmoji(123)).toBe('🌀');
+    expect(getStatusEmoji({})).toBe('🌀');
   });
 
   test('should log the state', () => {
