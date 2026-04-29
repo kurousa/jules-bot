@@ -5,7 +5,7 @@
  */
 function doPost(e) {
   // Slackからのスラッシュコマンドは 'parameter' に入ってきます
-  const params = e && e.parameter ? e.parameter : null;
+  const params = e?.parameter ?? null;
   // パラメータやテキストが存在しない場合は使い方を表示
   if (!params || typeof params.text !== 'string') {
     return usage();
