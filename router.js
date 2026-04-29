@@ -5,7 +5,12 @@
  */
 function doPost(e) {
   // Slackからのスラッシュコマンドは 'parameter' に入ってきます
-  const params = e.parameter;
+  const params = e?.parameter ?? null;
+  // パラメータやテキストが存在しない場合は使い方を表示
+  if (!params || typeof params.text !== 'string' || params.text.trim() === '') {
+    return usage();
+  }
+
   // スラッシュコマンドのテキスト部分を取得 (例: "owner/repo bug fix")
   const text = params.text.trim();
   
