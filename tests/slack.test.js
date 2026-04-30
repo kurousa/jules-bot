@@ -50,8 +50,8 @@ function runTests() {
   assert.strictEqual(context.fetchOpts.method, 'post');
   assert.strictEqual(context.fetchOpts.headers.Authorization, 'Bearer token');
 
-  // Test 4: createTextResponse
-  const response = context.createTextResponse('Hello');
+  // Test 4: createTextResponse_
+  const response = context.createTextResponse_('Hello');
   assert.strictEqual(response, 'Mocked: Hello [TEXT_MIME]');
 }
 
