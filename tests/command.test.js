@@ -4,17 +4,26 @@ const vm = require('vm');
 const path = require('path');
 
 const commandCode = fs.readFileSync(path.join(__dirname, '../command.js'), 'utf8');
+const slackCode = fs.readFileSync(path.join(__dirname, '../slack.js'), 'utf8');
 
 function setupContext() {
   const context = vm.createContext({
-    createTextResponse: (msg) => `Mocked: ${msg}`,
+    ContentService: {
+      createTextOutput: (msg) => ({
+        setMimeType: (mime) => `Mocked: ${msg} [${mime}]`
+      }),
+      MimeType: { TEXT: 'TEXT_MIME' }
+    },
     fetchJulesSessions: () => {
       if (context.apiError) throw new Error("API Error");
       return context.mockSessions || [];
     },
     updateCache: () => { context.cacheUpdated = true; },
     getActiveSessionsCache: () => context.mockCacheSessions || [],
-    console: { warn: () => { context.warnCalled = true; } },
+    console: {
+      warn: () => { context.warnCalled = true; },
+      error: () => { context.errorLogged = true; }
+    },
     getStatusEmoji: () => 'emoji',
     createJulesSession: (repo, prompt) => {
       if (context.apiError) throw new Error("API Error");
@@ -26,6 +35,7 @@ function setupContext() {
     sendSlackNotification: () => {},
     module: {}
   });
+  vm.runInContext(slackCode, context);
   vm.runInContext(commandCode, context);
   return context;
 }
@@ -65,11 +75,13 @@ function runTests() {
   assert.strictEqual(context.savedSession, "owner/repo");
   assert.ok(result.includes("🚀 Julesがタスクを開始しました！"));
 
-  // Test startTask() - error
+  // Test startTask() - error (Security Fix Verification)
   context = setupContext();
   context.apiError = true;
   result = context.startTask("owner/repo fix this bug");
-  assert.ok(result.includes("Jules API連携エラー: Error: API Error"));
+  assert.ok(result.includes("Jules API連携中にエラーが発生しました。"));
+  assert.ok(!result.includes("API Error"), "Error message should not contain raw error details");
+  assert.strictEqual(context.errorLogged, true, "Error should be logged to console.error");
 }
 
 runTests();

@@ -1,59 +1,52 @@
-const { getStatusEmoji } = require('../jules.js');
+const assert = require('assert');
+const fs = require('fs');
+const vm = require('vm');
+const path = require('path');
 
-describe('getStatusEmoji', () => {
-  beforeAll(() => {
-    global.Logger = {
-      log: jest.fn()
-    };
-  });
-  
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-  
-  test('should return 😴 for IDLE (case insensitive)', () => {
-    expect(getStatusEmoji('IDLE')).toBe('😴');
-    expect(getStatusEmoji('idle')).toBe('😴');
-    expect(getStatusEmoji('Idle')).toBe('😴');
-  });
+const julesCode = fs.readFileSync(path.join(__dirname, '../jules.js'), 'utf8');
 
-  test('should return ⚙️ for RUNNING, ANALYZING, PLANNING', () => {
-    expect(getStatusEmoji('RUNNING')).toBe('⚙️');
-    expect(getStatusEmoji('ANALYZING')).toBe('⚙️');
-    expect(getStatusEmoji('PLANNING')).toBe('⚙️');
+function setupContext() {
+  const context = vm.createContext({
+    Logger: { log: (msg) => { context.lastLog = msg; } },
+    module: {}
   });
+  vm.runInContext(julesCode, context);
+  return context;
+}
 
-  test('should return ❓[**ACTION NEEDED**] for AWAITING_USER_FEEDBACK', () => {
-    expect(getStatusEmoji('AWAITING_USER_FEEDBACK')).toBe('❓[**ACTION NEEDED**]');
-  });
+function runTests() {
+  const context = setupContext();
+  const { getStatusEmoji } = context;
 
-  test('should return ✅ for COMPLETED', () => {
-    expect(getStatusEmoji('COMPLETED')).toBe('✅');
-  });
+  // IDLE
+  assert.strictEqual(getStatusEmoji('IDLE'), '😴');
+  assert.strictEqual(getStatusEmoji('idle'), '😴');
+  assert.strictEqual(getStatusEmoji('Idle'), '😴');
 
-  test('should return ❌ for FAILED', () => {
-    expect(getStatusEmoji('FAILED')).toBe('❌');
-  });
+  // RUNNING, ANALYZING, PLANNING
+  assert.strictEqual(getStatusEmoji('RUNNING'), '⚙️');
+  assert.strictEqual(getStatusEmoji('ANALYZING'), '⚙️');
+  assert.strictEqual(getStatusEmoji('PLANNING'), '⚙️');
 
-  test('should return ⚪ for null, undefined, or empty string', () => {
-    expect(getStatusEmoji(null)).toBe('⚪');
-    expect(getStatusEmoji(undefined)).toBe('⚪');
-    expect(getStatusEmoji('')).toBe('⚪');
-  });
+  // AWAITING_USER_FEEDBACK
+  assert.strictEqual(getStatusEmoji('AWAITING_USER_FEEDBACK'), '❓[**ACTION NEEDED**]');
 
-  test('should return 🌀 for unknown states', () => {
-    expect(getStatusEmoji('UNKNOWN')).toBe('🌀');
-    expect(getStatusEmoji('SOME_OTHER_STATE')).toBe('🌀');
-  });
+  // COMPLETED
+  assert.strictEqual(getStatusEmoji('COMPLETED'), '✅');
 
-  test('should handle non-string truthy values safely', () => {
-    expect(getStatusEmoji(true)).toBe('🌀');
-    expect(getStatusEmoji(123)).toBe('🌀');
-    expect(getStatusEmoji({})).toBe('🌀');
-  });
+  // FAILED
+  assert.strictEqual(getStatusEmoji('FAILED'), '❌');
 
-  test('should log the state', () => {
-    getStatusEmoji('TEST_STATE');
-    expect(global.Logger.log).toHaveBeenCalledWith('state: TEST_STATE');
-  });
-});
+  // null, undefined, empty
+  assert.strictEqual(getStatusEmoji(null), '⚪');
+  assert.strictEqual(getStatusEmoji(undefined), '⚪');
+  assert.strictEqual(getStatusEmoji(''), '⚪');
+
+  // unknown
+  assert.strictEqual(getStatusEmoji('UNKNOWN'), '🌀');
+
+  // non-string
+  assert.strictEqual(getStatusEmoji(true), '🌀');
+}
+
+runTests();

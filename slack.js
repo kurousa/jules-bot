@@ -40,6 +40,20 @@ function getJulesJobList() {
   if (!sessions || sessions.length === 0) {
       return createTextResponse_("現在実行中のタスクはありません。"); 
   }
+
+  let listMessage = isFromCache
+    ? "⚠️ *APIタイムアウトのためキャッシュを表示中:*\n"
+    : "📂 *Jules API セッション一覧:*\n";
+
+  sessions.slice(0, 5).forEach((s, i) => {
+    const sessionId = s.name.split('/').pop();
+    const repo = s.sourceContext?.source?.replace('sources/github/', '') || s.repo || 'Unknown Repo';
+    const statusEmoji = getStatusEmoji(s.state); // ステータスに応じた絵文字
+    const title = s.title || s.prompt || 'No Title';
+    const sessionUrl = `https://jules.google.com/session/${sessionId}`;
+    listMessage += `${i + 1}. *${repo}*\n   ${statusEmoji} ${title}\n   🔗 ${sessionUrl}\n`;
+  });
+  return createTextResponse_(listMessage);
 }
 
 function sendSlackNotification(message) {
@@ -55,7 +69,6 @@ function sendSlackNotification(message) {
     headers: { 'Authorization': `Bearer ${SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' },
     payload: JSON.stringify({ channel: SLACK_CHANNEL_ID, text: message })
   });
-  return createTextResponse_(listMessage);
 }
 
 /**
@@ -76,7 +89,8 @@ function startTask(text) {
     return createTextResponse_(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
 
   } catch (err) {
-      return createTextResponse_("Jules API連携エラー: " + err.toString());
+    console.error(err);
+    return createTextResponse_("Jules API連携中にエラーが発生しました。しばらくしてから再度お試しください。");
   }
 }
 

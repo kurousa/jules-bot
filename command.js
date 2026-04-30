@@ -17,7 +17,7 @@ function usage() {
     `・一覧: \`${COMMANDS["list"]}\``
   ].join("\n");
 
-  return createTextResponse(message);
+  return createTextResponse_(message);
 }
 
 /**
@@ -42,7 +42,7 @@ function getJulesJobList() {
   }
 
   if (!sessions || sessions.length === 0) {
-      return createTextResponse("現在実行中のタスクはありません。");
+      return createTextResponse_("現在実行中のタスクはありません。");
   }
 
   let listMessage = isFromCache 
@@ -77,7 +77,8 @@ function startTask(text) {
     return createTextResponse_(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
 
   } catch (err) {
-      return createTextResponse_("Jules API連携エラー: " + err.toString());
+    console.error(err);
+    return createTextResponse_("Jules API連携中にエラーが発生しました。しばらくしてから再度お試しください。");
   }
 }
 

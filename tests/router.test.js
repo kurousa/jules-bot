@@ -9,6 +9,17 @@ function runTests() {
   let calls = {};
 
   const context = vm.createContext({
+    PropertiesService: {
+      getScriptProperties: () => ({
+        getProperty: (key) => 'valid_token'
+      })
+    },
+    ContentService: {
+      createTextOutput: (msg) => ({
+        setMimeType: (mime) => `Mocked: ${msg}`
+      }),
+      MimeType: { TEXT: 'TEXT_MIME' }
+    },
     getJulesJobList: () => { calls.getJulesJobList = (calls.getJulesJobList || 0) + 1; return 'Mocked List'; },
     usage: () => { calls.usage = (calls.usage || 0) + 1; return 'Mocked Usage'; },
     startTask: (text) => {
@@ -21,30 +32,35 @@ function runTests() {
 
   vm.runInContext(routerCode, context);
 
+  // Test Token Verification
+  calls = {};
+  let result = context.doPost({ parameter: { token: 'invalid', text: 'list' } });
+  assert.strictEqual(result, 'Mocked: Invalid token');
+
   // Test 1
   calls = {};
-  let result = context.doPost({ parameter: { text: 'list' } });
+  result = context.doPost({ parameter: { token: 'valid_token', text: 'list' } });
   assert.strictEqual(calls.getJulesJobList, 1);
   assert.strictEqual(result, 'Mocked List');
 
   // Test 2
   calls = {};
-  result = context.doPost({ parameter: { text: 'LIST' } });
+  result = context.doPost({ parameter: { token: 'valid_token', text: 'LIST' } });
   assert.strictEqual(calls.getJulesJobList, 1);
 
   // Test 3
   calls = {};
-  result = context.doPost({ parameter: { text: 'repo_only' } });
+  result = context.doPost({ parameter: { token: 'valid_token', text: 'repo_only' } });
   assert.strictEqual(calls.usage, 1);
 
   // Test 4
   calls = {};
-  result = context.doPost({ parameter: { text: '  ' } });
+  result = context.doPost({ parameter: { token: 'valid_token', text: '  ' } });
   assert.strictEqual(calls.usage, 1);
 
   // Test 5
   calls = {};
-  result = context.doPost({ parameter: { text: ' repo prompt ' } });
+  result = context.doPost({ parameter: { token: 'valid_token', text: ' repo prompt ' } });
   assert.strictEqual(calls.startTask, 1);
   assert.strictEqual(calls.startTaskArg, 'repo prompt');
 
