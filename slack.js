@@ -9,39 +9,9 @@ if (typeof PropertiesService !== 'undefined') {
 }
 
 /**
- * 使い方の案内メッセージを出力する
+ * Slack通知を送信する
+ * @param {string} message 送信するメッセージ
  */
-function usage() {
-  return createTextResponse_("💡 使いかた:\n・開始: `/jules [repo] [prompt]`\n・一覧: `/jules list`");
-}
-
-/**
- * 進行中ジョブリストを取得
- * @input
- *  /jules list
- */
-function getJulesJobList() {
-  let sessions = [];
-  let isFromCache = false;  
-  try {
-      // 1. まずはAPIから取得を試みる
-      sessions = fetchJulesSessions();
-      // 取得に成功したらキャッシュを更新しておく
-      if (sessions && sessions.length > 0) {
-        updateCache(sessions);
-      }
-  } catch (err) {
-      // 2. APIがタイムアウトやエラーならキャッシュに切り替え
-      console.warn("API Fetch failed, switching to cache: " + err.toString());
-      sessions = getActiveSessionsCache();
-      isFromCache = true;
-  }
-
-  if (!sessions || sessions.length === 0) {
-      return createTextResponse_("現在実行中のタスクはありません。"); 
-  }
-}
-
 function sendSlackNotification(message) {
   if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
     if (typeof Logger !== 'undefined') {
@@ -55,29 +25,6 @@ function sendSlackNotification(message) {
     headers: { 'Authorization': `Bearer ${SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' },
     payload: JSON.stringify({ channel: SLACK_CHANNEL_ID, text: message })
   });
-  return createTextResponse_(listMessage);
-}
-
-/**
- * Julesへタスク開始の指示を行う
- * 
- * @input
- *  /jules [repo] [promt] 形式
- */
-function startTask(text) {
-  const firstSpaceIndex = text.indexOf(' ');
-  const repo = text.substring(0, firstSpaceIndex);
-  const prompt = text.substring(firstSpaceIndex + 1);
-
-  try {
-    const julesResponse = createJulesSession(repo, prompt);
-    saveActiveSession(julesResponse, repo);
-    
-    return createTextResponse_(`🚀 Julesがタスクを開始しました！\n📦 Repo: ${repo}\n\n進行状況は \`/jules list\` で確認できます。`);
-
-  } catch (err) {
-      return createTextResponse_("Jules API連携エラー: " + err.toString());
-  }
 }
 
 /**
@@ -89,4 +36,8 @@ function createTextResponse_(message) {
   return ContentService
     .createTextOutput(message)
     .setMimeType(ContentService.MimeType.TEXT);
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { sendSlackNotification, createTextResponse_ };
 }

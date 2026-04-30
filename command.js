@@ -17,7 +17,7 @@ function usage() {
     `・一覧: \`${COMMANDS["list"]}\``
   ].join("\n");
 
-  return createTextResponse(message);
+  return createTextResponse_(message);
 }
 
 /**
@@ -42,7 +42,7 @@ function getJulesJobList() {
   }
 
   if (!sessions || sessions.length === 0) {
-      return createTextResponse("現在実行中のタスクはありません。");
+      return createTextResponse_("現在実行中のタスクはありません。");
   }
 
   let listMessage = isFromCache 
