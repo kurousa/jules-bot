@@ -8,6 +8,7 @@ const commandCode = fs.readFileSync(path.join(__dirname, '../command.js'), 'utf8
 function setupContext() {
   const context = vm.createContext({
     createTextResponse: (msg) => `Mocked: ${msg}`,
+    createTextResponse_: (msg) => `Mocked: ${msg}`,
     fetchJulesSessions: () => {
       if (context.apiError) throw new Error("API Error");
       return context.mockSessions || [];
@@ -70,6 +71,29 @@ function runTests() {
   context.apiError = true;
   result = context.startTask("owner/repo fix this bug");
   assert.ok(result.includes("Jules API連携エラー: Error: API Error"));
+
+  // Test startTask() - no space (edge case)
+  context = setupContext();
+  result = context.startTask("owner/repo");
+  assert.ok(result.includes("エラー: リポジトリ名とプロンプトをスペース区切りで入力してください。"));
+
+  // Test startTask() - leading space
+  context = setupContext();
+  result = context.startTask(" owner/repo prompt");
+  assert.strictEqual(context.savedSession, "owner/repo");
+  assert.ok(result.includes("🚀 Julesがタスクを開始しました！"));
+  assert.ok(result.includes("Repo: owner/repo"));
+
+  // Test startTask() - multiple spaces
+  context = setupContext();
+  result = context.startTask("owner/repo  prompt with spaces");
+  assert.strictEqual(context.savedSession, "owner/repo");
+  assert.ok(result.includes("Repo: owner/repo"));
+
+  // Test startTask() - empty prompt after repo
+  context = setupContext();
+  result = context.startTask("owner/repo  ");
+  assert.ok(result.includes("エラー: リポジトリ名とプロンプトをスペース区切りで入力してください。"));
 }
 
 runTests();

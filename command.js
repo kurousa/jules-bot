@@ -66,9 +66,19 @@ function getJulesJobList() {
  * @input /jules task start [repo] [promt]
  */
 function startTask(text) {
-  const firstSpaceIndex = text.indexOf(' ');
-  const repo = text.substring(0, firstSpaceIndex);
-  const prompt = text.substring(firstSpaceIndex + 1);
+  const trimmedText = text.trim();
+  const firstSpaceIndex = trimmedText.indexOf(' ');
+
+  if (firstSpaceIndex === -1) {
+    return createTextResponse_("エラー: リポジトリ名とプロンプトをスペース区切りで入力してください。\n例: `owner/repo bug fix` ");
+  }
+
+  const repo = trimmedText.substring(0, firstSpaceIndex);
+  const prompt = trimmedText.substring(firstSpaceIndex + 1).trim();
+
+  if (!repo || !prompt) {
+    return createTextResponse_("エラー: リポジトリ名またはプロンプトが不足しています。");
+  }
 
   try {
     const julesResponse = createJulesSession(repo, prompt);
