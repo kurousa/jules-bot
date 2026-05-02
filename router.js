@@ -7,7 +7,7 @@ function doPost(e) {
   // Slackのトークン検証
   const expectedToken = PropertiesService.getScriptProperties().getProperty('SLACK_VERIFICATION_TOKEN');
   if (!expectedToken || !e || !e.parameter || e.parameter.token !== expectedToken) {
-    return ContentService.createTextOutput("Invalid token").setMimeType(ContentService.MimeType.TEXT);
+    return createTextResponse_("Invalid token");
   }
 
   // Slackからのスラッシュコマンドは 'parameter' に入ってきます

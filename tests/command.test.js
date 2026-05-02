@@ -7,7 +7,7 @@ const commandCode = fs.readFileSync(path.join(__dirname, '../command.js'), 'utf8
 
 function setupContext() {
   const context = vm.createContext({
-    createTextResponse: (msg) => `Mocked: ${msg}`,
+    createTextResponse_: (msg) => `Mocked: ${msg}`,
     fetchJulesSessions: () => {
       if (context.apiError) throw new Error("API Error");
       return context.mockSessions || [];

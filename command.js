@@ -4,7 +4,7 @@
 COMMANDS = {
     "usage": "/jules",
     "list": "/jules list",
-    "task start": "/jules task start [repo] [prompt]"
+    "task start": "/jules [repo] [prompt]"
 }
 /**
  * 使い方の案内メッセージを出力する
@@ -17,7 +17,7 @@ function usage() {
     `・一覧: \`${COMMANDS["list"]}\``
   ].join("\n");
 
-  return createTextResponse(message);
+  return createTextResponse_(message);
 }
 
 /**
@@ -42,7 +42,7 @@ function getJulesJobList() {
   }
 
   if (!sessions || sessions.length === 0) {
-      return createTextResponse("現在実行中のタスクはありません。");
+      return createTextResponse_("現在実行中のタスクはありません。");
   }
 
   let listMessage = isFromCache 
@@ -63,7 +63,7 @@ function getJulesJobList() {
 /**
  * Julesへタスク開始の指示を行う
  * 
- * @input /jules task start [repo] [promt]
+ * @input /jules [repo] [promt]
  */
 function startTask(text) {
   const firstSpaceIndex = text.indexOf(' ');
